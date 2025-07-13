@@ -2,6 +2,8 @@
 
 Check pending rewards from multiple Cardano DeFi protocols by entering your wallet address.
 
+**🌐 Live App: https://simonschubert.github.io/cardano-rewards/**
+
 ![Screenshot](screenshot.png)
 
 ## Supported Providers
