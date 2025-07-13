@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cardano Reward Checker - AdaHub.io</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Cardano Reward Checker</h1>
+            <p>Check unclaimed rewards across multiple Cardano services</p>
+        </div>
+
+        <div class="main-card">
+            <div class="input-section">
+                <h2 style="margin-bottom: 1rem;">Enter Wallet Address</h2>
+                <div class="input-group">
+                    <input 
+                        type="text" 
+                        id="walletAddress" 
+                        class="wallet-input" 
+                        placeholder="addr1q... (Enter your Cardano wallet address)"
+                    >
+                    <button class="btn btn-primary">
+                        Check Rewards
+                    </button>
+                </div>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Checking rewards across multiple modular providers...</p>
+            </div>
+
+            <div class="results" id="results">
+                <h2 style="margin-bottom: 1.5rem;">Reward Results</h2>
+                <div id="resultsContainer"></div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Part of <a href="https://adahub.io" style="color:black" target="_blank">adahub.io</a> ecosystem | Built for the Cardano community</p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { RewardCheckerApp } from './js/app.js';
+
+        // Initialize the application when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            const app = new RewardCheckerApp();
+            app.init();
+
+            // Make app available globally for debugging
+            window.rewardChecker = app;
+        });
+    </script>
+</body>
+</html>
