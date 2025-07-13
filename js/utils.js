@@ -189,3 +189,11 @@ export function hexToString(hexAssetName) {
         return hexAssetName;
     }
 }
+
+/**
+ * CORS Proxy services (free alternatives to proxy.cors.sh)
+ */
+export const CORS_PROXIES = {
+    // Most reliable option - uses JSONP-style callback
+    ALLORIGINS:  'https://cors-anywhere.com/'
+};

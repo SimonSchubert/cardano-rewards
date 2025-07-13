@@ -12,6 +12,7 @@ export class SundaeLiqwidProvider extends BaseProvider {
             icon: 'https://v2.liqwid.finance/favicon.png',
             endpoint: 'https://api.sundae-rewards.sundaeswap.finance/api/v1/liqwid/rewards',
             method: 'POST',
+            useCorsProxy: false,
             platformUrl: 'https://liqwid-rewards.sundaeswap.finance',
             headers: {
                 'accept': 'application/json, text/plain, */*',

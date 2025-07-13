@@ -12,11 +12,13 @@ export class NuvolaDigitalProvider extends BaseProvider {
             icon: 'https://app.nuvoladigital.io/_next/image/?url=https%3A%2F%2Fik.imagekit.io%2Fpizzli%2FCMS%2Fproduction%2Fsites%2F359%2Flogo.png&w=256&q=75',
             endpoint: 'https://us-central1-anvil-6fe83.cloudfunctions.net/getStakesV2',
             method: 'POST',
+            useCorsProxy: true,
             platformUrl: 'https://app.nuvoladigital.io',
             headers: {
                 'accept': 'application/json, text/plain, */*',
                 'content-type': 'application/json',
-                'origin': 'https://app.nuvoladigital.io'
+                'origin': 'https://app.nuvoladigital.io',
+                'access-control-allow-origin': 'https://app.nuvoladigital.io'
             }
         });
 

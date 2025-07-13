@@ -51,6 +51,68 @@ export class RewardCheckerApp {
     displayProviderInfo() {
         const stats = this.providerRegistry.getProviderStats();
         console.log(`Loaded ${stats.totalProviders} reward providers:`, stats.providerNames);
+        
+        // Populate the services grid
+        this.populateServicesGrid();
+    }
+
+    /**
+     * Populate the services grid with provider information
+     */
+    populateServicesGrid() {
+        const servicesGrid = getElement('#servicesGrid');
+        if (!servicesGrid) return;
+
+        const providers = this.providerRegistry.getAllProviders();
+        servicesGrid.innerHTML = '';
+
+        providers.forEach(provider => {
+            const serviceItem = document.createElement('a');
+            serviceItem.className = 'service-item';
+            
+            if (provider.platformUrl) {
+                serviceItem.href = provider.platformUrl;
+                serviceItem.target = '_blank';
+                serviceItem.rel = 'noopener noreferrer';
+            } else {
+                serviceItem.href = '#';
+                serviceItem.addEventListener('click', (e) => {
+                    e.preventDefault();
+                });
+                serviceItem.style.cursor = 'default';
+            }
+
+            // Create icon element
+            const icon = document.createElement('div');
+            icon.className = 'service-icon';
+            
+            if (provider.icon) {
+                const img = document.createElement('img');
+                img.src = provider.icon;
+                img.alt = `${provider.name} icon`;
+                img.className = 'service-icon';
+                img.onerror = () => {
+                    // Fallback to text-based icon if image fails to load
+                    icon.className = 'service-icon placeholder';
+                    icon.textContent = provider.name.charAt(0).toUpperCase();
+                    icon.removeChild(img);
+                };
+                icon.appendChild(img);
+            } else {
+                // Text-based fallback icon
+                icon.className = 'service-icon placeholder';
+                icon.textContent = provider.name.charAt(0).toUpperCase();
+            }
+
+            // Create name element
+            const name = document.createElement('div');
+            name.className = 'service-name-item';
+            name.textContent = provider.name;
+
+            serviceItem.appendChild(icon);
+            serviceItem.appendChild(name);
+            servicesGrid.appendChild(serviceItem);
+        });
     }
 
     /**

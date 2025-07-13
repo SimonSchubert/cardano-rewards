@@ -10,12 +10,15 @@ export class MinswapProvider extends BaseProvider {
             name: 'Minswap',
             id: 'minswap',
             icon: 'https://minswap.org/favicon.ico',
-            endpoint: 'https://proxy.cors.sh/https://monorepo-mainnet-prod.minswap.org/graphql',
+            endpoint: 'https://monorepo-mainnet-prod.minswap.org/graphql',
             method: 'POST',
+            useCorsProxy: true,
             platformUrl: 'https://minswap.org',
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'access-control-allow-origin': 'https://minswap.org',
+                'origin': 'https://minswap.org',
             }
         });
     }
@@ -212,7 +215,7 @@ fragment marketData on Asset {
     }
 
     /**
-     * Override checkRewards to handle single address limitation and CORS issues
+     * Override checkRewards to handle single address limitation
      * @param {string|string[]} addresses - Single address or array of addresses
      * @returns {Promise<Object>} Standardized reward response
      */
@@ -233,55 +236,7 @@ fragment marketData on Asset {
             const response = await this.makeRequest([addressArray[0]]);
             return this.formatResponse(response);
         } catch (error) {
-            // Handle CORS errors specifically
-            if (error.message.includes('CORS') || error.message.includes('Access-Control-Allow-Origin')) {
-                throw new Error(`CORS policy prevents access to Minswap API from this domain. This is a browser security feature. The Minswap API may need to be accessed through a proxy or backend service.`);
-            }
             throw new Error(`${this.name}: ${error.message}`);
-        }
-    }
-
-    /**
-     * Override makeRequest to handle CORS and provide better error handling
-     * @param {string[]} addresses - Array of wallet addresses
-     * @returns {Promise<Object>} Raw API response
-     */
-    async makeRequest(addresses) {
-        const requestBody = this.buildRequest(addresses);
-        
-        try {
-            console.log(`Minswap: Making request to ${this.endpoint} for address:`, addresses[0]);
-            const response = await fetch(this.endpoint, {
-                method: this.method,
-                headers: this.headers,
-                body: JSON.stringify(requestBody),
-                mode: 'cors' // Explicitly set CORS mode
-            });
-
-            console.log(`Minswap: Response status:`, response.status, response.statusText);
-
-            if (!response.ok) {
-                if (response.status === 0) {
-                    throw new Error('CORS policy blocks this request. The Minswap API does not allow cross-origin requests from this domain.');
-                }
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-
-            const data = await response.json();
-            console.log(`Minswap: Response data:`, data);
-            
-            // Check for GraphQL errors
-            if (data.errors && data.errors.length > 0) {
-                throw new Error(`GraphQL Error: ${data.errors[0].message}`);
-            }
-
-            return data;
-        } catch (error) {
-            console.error(`Minswap: Request failed:`, error);
-            if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
-                throw new Error('Network error: Unable to reach Minswap API. This may be due to CORS policy or network connectivity issues.');
-            }
-            throw error;
         }
     }
 }
