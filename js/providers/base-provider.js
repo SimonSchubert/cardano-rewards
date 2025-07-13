@@ -1,4 +1,4 @@
-import { isValidAddress } from '../utils.js';
+import { isValidAddress, CORS_PROXIES } from '../utils.js';
 
 /**
  * Base Provider Class
@@ -9,10 +9,40 @@ export class BaseProvider {
         this.name = config.name;
         this.id = config.id;
         this.icon = config.icon || null;
-        this.endpoint = config.endpoint;
+        this.originalEndpoint = config.endpoint;
+        this.useCorsProxy = config.useCorsProxy !== false; // Default to true
         this.method = config.method || 'POST';
         this.headers = config.headers || {};
         this.platformUrl = config.platformUrl || null;
+    }
+
+    /**
+     * Get the endpoint URL, with CORS proxy if enabled
+     * @returns {string} Final endpoint URL
+     */
+    get endpoint() {
+        return this.buildUrl(this.originalEndpoint, this.method);
+    }
+
+    /**
+     * Build URL with CORS proxy if enabled
+     * @param {string} url - Original URL
+     * @param {string} method - HTTP method (GET, POST, etc.)
+     * @returns {string} Final URL with or without CORS proxy
+     */
+    buildUrl(url, method = 'GET') {
+        if (this.useCorsProxy && url) {
+            // For POST requests through allorigins, we need to use a different approach
+            // allorigins.win expects the URL as a query parameter for GET requests
+            if (method === 'GET') {
+                return `${CORS_PROXIES.ALLORIGINS}${url}`;
+            } else {
+                // For POST requests, we'll use the raw proxy approach
+                // Note: This might need adjustment based on the specific CORS proxy service
+                return `${CORS_PROXIES.ALLORIGINS}${url}`;
+            }
+        }
+        return url;
     }
 
     /**
@@ -37,18 +67,49 @@ export class BaseProvider {
      */
     async makeRequest(addresses) {
         const requestBody = this.buildRequest(addresses);
-        
-        const response = await fetch(this.endpoint, {
+        return await this.makeHttpRequest(this.endpoint, {
             method: this.method,
             headers: this.headers,
             body: JSON.stringify(requestBody)
         });
+    }
+
+    /**
+     * Make HTTP request with common error handling and proxy response parsing
+     * @param {string} url - Request URL
+     * @param {Object} options - Fetch options
+     * @returns {Promise<Object>} Parsed response data
+     */
+    async makeHttpRequest(url, options = {}) {
+        const defaultOptions = {
+            mode: 'cors',
+            ...options
+        };
+
+        const response = await fetch(url, defaultOptions);
 
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
 
-        return await response.json();
+        return await this.parseProxyResponse(response);
+    }
+
+    /**
+     * Parse response from CORS proxy if needed
+     * @param {Object} response - Raw response from fetch
+     * @returns {Object} Parsed response data
+     */
+    async parseProxyResponse(response) {
+        const result = await response.json();
+        
+        // Handle allorigins.win response format
+        if (this.useCorsProxy && result.contents !== undefined) {
+            // allorigins.win wraps the response in a 'contents' field
+            return typeof result.contents === 'string' ? JSON.parse(result.contents) : result.contents;
+        }
+        
+        return result;
     }
 
     /**
@@ -83,5 +144,45 @@ export class BaseProvider {
      */
     isValidAddress(address) {
         return isValidAddress(address);
+    }
+
+    /**
+     * Make HTTP GET request with query parameters
+     * @param {string} queryParams - Query parameters string
+     * @returns {Promise<Object>} Raw API response
+     */
+    async makeGetRequest(queryParams = '') {
+        const fullUrl = queryParams ? `${this.originalEndpoint}?${queryParams}` : this.originalEndpoint;
+        const finalUrl = this.buildUrl(fullUrl, 'GET');
+        
+        return await this.makeHttpRequest(finalUrl, {
+            method: 'GET',
+            headers: this.headers
+        });
+    }
+
+    /**
+     * Make HTTP POST request to a specific endpoint path
+     * @param {string} path - Endpoint path to append to base URL
+     * @param {Object} body - Request body
+     * @returns {Promise<Object>} Raw API response
+     */
+    async makePostRequest(path, body) {
+        const fullUrl = `${this.originalEndpoint}/${path}`;
+        const finalUrl = this.buildUrl(fullUrl, 'POST');
+        
+        return await this.makeHttpRequest(finalUrl, {
+            method: 'POST',
+            headers: this.headers,
+            body: JSON.stringify(body)
+        });
+    }
+
+    /**
+     * Set whether to use CORS proxy
+     * @param {boolean} useCorsProxy - Whether to use CORS proxy
+     */
+    setCorsProxy(useCorsProxy) {
+        this.useCorsProxy = useCorsProxy;
     }
 }

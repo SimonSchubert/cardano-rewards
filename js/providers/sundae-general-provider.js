@@ -12,6 +12,7 @@ export class SundaeGeneralProvider extends BaseProvider {
             icon: 'https://app.sundae.fi/images/favicon.png',
             endpoint: 'https://api.sundae.fi/graphql',
             method: 'POST',
+            useCorsProxy: false,
             platformUrl: 'https://sundaeswap.finance',
             headers: {
                 'accept': '*/*',

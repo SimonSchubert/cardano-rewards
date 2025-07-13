@@ -11,12 +11,15 @@ export class CardanoStakingProvider extends BaseProvider {
             name: 'Cardano Staking',
             id: 'cardano-staking',
             icon: 'https://cardano.org/img/favicon.ico',
-            endpoint: 'https://proxy.cors.sh/https://api.koios.rest/api/v1',
+            endpoint: 'https://api.koios.rest/api/v1',
             method: 'POST',
+            useCorsProxy: true,
             platformUrl: 'https://cardano.org',
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'origin': 'https://koios.rest',
+                'Access-Control-Allow-Origin': 'https://koios.rest'
             }
         });
     }
@@ -56,19 +59,9 @@ export class CardanoStakingProvider extends BaseProvider {
      * @returns {Promise<Array>} Address information array
      */
     async getAddressInfo(address) {
-        const response = await fetch(`${this.endpoint}/address_info`, {
-            method: 'POST',
-            headers: this.headers,
-            body: JSON.stringify({
-                _addresses: [address]
-            })
+        return await this.makePostRequest('address_info', {
+            _addresses: [address]
         });
-
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-
-        return await response.json();
     }
 
     /**
@@ -77,22 +70,16 @@ export class CardanoStakingProvider extends BaseProvider {
      * @returns {Promise<Array>} Account information array
      */
     async getAccountInfo(stakeAddress) {
-        const response = await fetch(`${this.endpoint}/account_info`, {
-            method: 'POST',
-            headers: this.headers,
-            body: JSON.stringify({
+        try {
+            return await this.makePostRequest('account_info', {
                 _stake_addresses: [stakeAddress]
-            })
-        });
-
-        if (!response.ok) {
-            if (response.status === 404) {
+            });
+        } catch (error) {
+            if (error.message.includes('404')) {
                 return [];
             }
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            throw error;
         }
-
-        return await response.json();
     }
 
     /**

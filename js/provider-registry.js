@@ -3,6 +3,7 @@ import { SundaeGeneralProvider } from './providers/sundae-general-provider.js';
 import { NuvolaDigitalProvider } from './providers/nuvola-digital-provider.js';
 import { MinswapProvider } from './providers/minswap-provider.js';
 import { CardanoStakingProvider } from './providers/cardano-staking-provider.js';
+import { StrikeFinanceProvider } from './providers/strikefinance-provider.js';
 
 /**
  * Provider Registry
@@ -23,7 +24,8 @@ export class ProviderRegistry {
             new SundaeGeneralProvider(),
             new NuvolaDigitalProvider(),
             new MinswapProvider(),
-            new CardanoStakingProvider()
+            new CardanoStakingProvider(),
+            new StrikeFinanceProvider()
         ];
 
         providers.forEach(provider => {
